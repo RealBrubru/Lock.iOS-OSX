@@ -33,6 +33,13 @@ NSString * const A0JSONResponseSerializerErrorDataKey = @"A0JSONResponseSerializ
                  failureReason:A0LocalizedString(@"Can't find connection name to use for authentication")];
 }
 
++ (NSError *)invalidUsername {
+    return [self errorWithCode:A0ErrorCodeInvalidUsername
+                   description:A0LocalizedString(@"Invalid credentials")
+                 failureReason:A0LocalizedString(@"The username you entered is invalid. Please try again.")];
+}
+
+
 #pragma mark - Login errors
 
 + (NSError *)invalidLoginCredentialsUsingEmail:(BOOL)usesEmail {

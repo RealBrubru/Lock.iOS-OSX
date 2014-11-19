@@ -95,6 +95,8 @@ FOUNDATION_EXPORT NSString * const A0JSONResponseSerializerErrorDataKey;
 
 + (NSError *)noConnectionNameFound;
 
++ (NSError *)invalidUsername;
+
 ///----------------------------------------
 /// @name Login Errors
 ///----------------------------------------
