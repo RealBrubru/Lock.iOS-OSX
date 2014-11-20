@@ -98,6 +98,8 @@ FOUNDATION_EXPORT NSString * const A0JSONResponseSerializerErrorDataKey;
 
 @interface A0Errors : NSObject
 
++ (NSError *)errorWithCode:(NSInteger)code userInfo:(NSDictionary *)userInfo;
+
 + (NSError *)noConnectionNameFound;
 
 + (NSError *)invalidUsername;
