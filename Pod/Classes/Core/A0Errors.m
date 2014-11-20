@@ -46,6 +46,12 @@ NSString * const A0JSONResponseSerializerErrorDataKey = @"A0JSONResponseSerializ
 }
 
 
++ (NSError *)invalidPassword {
+    return [self errorWithCode:A0ErrorCodeInvalidPassword
+                   description:A0LocalizedString(@"Invalid credentials")
+                 failureReason:A0LocalizedString(@"The password you entered is invalid. Please try again.")];
+}
+
 #pragma mark - Login errors
 
 + (NSError *)invalidLoginCredentialsUsingEmail:(BOOL)usesEmail {
