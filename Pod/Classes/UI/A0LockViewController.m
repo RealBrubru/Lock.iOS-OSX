@@ -25,9 +25,6 @@
 #import "A0Application.h"
 #import "A0APIClient.h"
 #import "A0IdentityProviderAuthenticator.h"
-#import "A0DatabaseLoginCredentialValidator.h"
-#import "A0SignUpCredentialValidator.h"
-#import "A0ChangePasswordCredentialValidator.h"
 #import "A0LoadingViewController.h"
 #import "A0DatabaseLoginViewController.h"
 #import "A0SignUpViewController.h"
@@ -146,7 +143,7 @@
         controller.showResetPassword = [connection.values[@"showForgot"] boolValue];
         controller.showSignUp = [connection.values[@"showSignup"] boolValue];
         controller.domainMatcher = [[A0SimpleConnectionDomainMatcher alloc] initWithStrategies:self.application.enterpriseStrategies];
-        controller.validator = [[A0DatabaseLoginCredentialValidator alloc] initWithUsesEmail:self.usesEmail];
+        controller.forceUsername = !self.usesEmail;
         rootController = controller;
     }
     if ((hasDB & !hasSocial) || (hasEnterprise && !hasDB && !hasSocial && !hasAD)) {
@@ -154,7 +151,7 @@
         controller.showResetPassword = [connection.values[@"showForgot"] boolValue];
         controller.showSignUp = [connection.values[@"showSignup"] boolValue];
         controller.domainMatcher = [[A0SimpleConnectionDomainMatcher alloc] initWithStrategies:self.application.enterpriseStrategies];
-        controller.validator = [[A0DatabaseLoginCredentialValidator alloc] initWithUsesEmail:self.usesEmail];
+        controller.forceUsername = !self.usesEmail;
         rootController = controller;
     }
     if (hasSocial && !hasAD && !hasDB && !hasEnterprise) {
@@ -167,14 +164,12 @@
         controller.application = application;
         controller.defaultConnection = ad.connections.firstObject;
         controller.domainMatcher = [[A0SimpleConnectionDomainMatcher alloc] initWithStrategies:self.application.enterpriseStrategies];
-        controller.validator = [[A0DatabaseLoginCredentialValidator alloc] initWithUsesEmail:NO];
         rootController = controller;
     }
     if (hasAD && !hasDB && !hasSocial) {
         A0ActiveDirectoryViewController *controller = [self newADLoginViewController:onAuthSuccessBlock];;
         controller.defaultConnection = ad.connections.firstObject;
         controller.domainMatcher = [[A0SimpleConnectionDomainMatcher alloc] initWithStrategies:self.application.enterpriseStrategies];
-        controller.validator = [[A0DatabaseLoginCredentialValidator alloc] initWithUsesEmail:NO];
         rootController = controller;
     }
     rootController.parameters = [self copyAuthenticationParameters];
@@ -298,7 +293,7 @@
 
 - (A0ChangePasswordViewController *)newChangePasswordViewController {
     A0ChangePasswordViewController *controller = [[A0ChangePasswordViewController alloc] init];
-    controller.validator = [[A0ChangePasswordCredentialValidator alloc] initWithUsesEmail:self.usesEmail];
+    controller.forceUsername = !self.usesEmail;
     controller.parameters = [self copyAuthenticationParameters];
     @weakify(self);
     void(^block)() = ^{

@@ -23,19 +23,22 @@
 #import "A0ChangePasswordViewController.h"
 #import "UIButton+A0SolidButton.h"
 #import "A0Errors.h"
-#import "A0ChangePasswordCredentialValidator.h"
 #import "A0ProgressButton.h"
 #import "A0APIClient.h"
 #import "A0Theme.h"
 #import "A0CredentialFieldView.h"
 #import "A0UIUtilities.h"
 #import "A0PasswordFieldView.h"
-
-#import <CoreGraphics/CoreGraphics.h>
-#import <libextobjc/EXTScope.h>
 #if __has_include("A0PasswordManager.h")
 #import "A0PasswordManager.h"
 #endif
+#import "A0CredentialsValidator.h"
+#import "A0UsernameValidator.h"
+#import "A0EmailValidator.h"
+#import "A0PasswordValidator.h"
+#import <CoreGraphics/CoreGraphics.h>
+#import <libextobjc/EXTScope.h>
+#import "A0ConfirmPasswordValidator.h"
 
 @interface A0ChangePasswordViewController ()
 
@@ -80,6 +83,16 @@
     [self.recoverButton setTitle:A0LocalizedString(@"SEND") forState:UIControlStateNormal];
     self.messageLabel.text = A0LocalizedString(@"Please enter your email and the new password. We will send you an email to confirm the password change.");
     [self.passwordField.passwordManagerButton addTarget:self action:@selector(changeLoginInfo:) forControlEvents:UIControlEventTouchUpInside];
+    NSMutableArray *validators = [@[
+                                    [[A0PasswordValidator alloc] initWithField:self.passwordField.textField],
+                                    [[A0ConfirmPasswordValidator alloc] initWithField:self.repeatPasswordField.textField passwordField:self.passwordField.textField],
+                                    ] mutableCopy];
+    if (self.forceUsername) {
+        [validators addObject:[[A0UsernameValidator alloc] initWithField:self.userField.textField]];
+    } else {
+        [validators addObject:[[A0EmailValidator alloc] initWithField:self.userField.textField]];
+    }
+    self.validator = [[A0CredentialsValidator alloc] initWithValidators:validators];
 }
 
 - (void)dealloc {
@@ -106,9 +119,8 @@
 
 - (IBAction)recover:(id)sender {
     [self.recoverButton setInProgress:YES];
-    NSError *error;
-    [self.validator setUsername:self.userField.textField.text password:self.passwordField.textField.text repeatPassword:self.repeatPasswordField.textField.text];
-    if ([self.validator validateCredential:&error]) {
+    NSError *error = [self.validator validate];
+    if (!error) {
         [self hideKeyboard];
         NSString *username = [self.userField.textField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
         NSString *password = self.passwordField.textField.text;
@@ -173,6 +185,7 @@
                 self.passwordField.invalid = YES;
                 break;
             case A0ErrorCodeInvalidUsername:
+            case A0ErrorCodeInvalidEmail:
                 self.userField.invalid = YES;
                 break;
             case A0ErrorCodeInvalidRepeatPassword:
