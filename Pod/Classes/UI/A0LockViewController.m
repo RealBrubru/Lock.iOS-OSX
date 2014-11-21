@@ -280,7 +280,7 @@
 
 - (A0SignUpViewController *)newSignUpViewControllerWithSuccess:(void(^)(A0UserProfile *, A0Token *))success {
     A0SignUpViewController *controller = [[A0SignUpViewController alloc] init];
-    controller.validator = [[A0SignUpCredentialValidator alloc] initWithUsesEmail:self.usesEmail];
+    controller.forceUsername = !self.usesEmail;
     controller.loginUser = self.loginAfterSignUp;
     controller.parameters = [self copyAuthenticationParameters];
     @weakify(self);

@@ -23,19 +23,24 @@
 #import "A0SignUpViewController.h"
 #import "UIButton+A0SolidButton.h"
 #import "A0Errors.h"
-#import "A0SignUpCredentialValidator.h"
 #import "A0ProgressButton.h"
 #import "A0APIClient.h"
 #import "A0Theme.h"
 #import "A0CredentialFieldView.h"
 #import "A0UIUtilities.h"
 #import "A0PasswordFieldView.h"
+#import "A0CredentialsValidator.h"
+#import "A0EmailValidator.h"
+#import "A0UsernameValidator.h"
+#import "A0PasswordValidator.h"
 
-#import <CoreGraphics/CoreGraphics.h>
-#import <libextobjc/EXTScope.h>
 #if __has_include("A0PasswordManager.h")
 #import "A0PasswordManager.h"
 #endif
+
+#import <CoreGraphics/CoreGraphics.h>
+#import <libextobjc/EXTScope.h>
+
 
 @interface A0SignUpViewController ()
 
@@ -76,6 +81,15 @@
     self.messageLabel.text = A0LocalizedString(@"Please enter your email and password");
 
     [self.passwordField.passwordManagerButton addTarget:self action:@selector(storeLoginInfo:) forControlEvents:UIControlEventTouchUpInside];
+    NSMutableArray *validators = [@[
+                                    [[A0PasswordValidator alloc] initWithField:self.passwordField.textField],
+                                    ] mutableCopy];
+    if (self.forceUsername) {
+        [validators addObject:[[A0UsernameValidator alloc] initWithField:self.userField.textField]];
+    } else {
+        [validators addObject:[[A0EmailValidator alloc] initWithField:self.userField.textField]];
+    }
+    self.validator = [[A0CredentialsValidator alloc] initWithValidators:validators];
 }
 
 - (void)dealloc {
@@ -100,10 +114,9 @@
 }
 
 - (void)signUp:(id)sender {
-    NSError *error;
     [self.signUpButton setInProgress:YES];
-    [self.validator setUsername:self.userField.textField.text password:self.passwordField.textField.text];
-    if ([self.validator validateCredential:&error]) {
+    NSError *error = [self.validator validate];
+    if (!error) {
         [self hideKeyboard];
         NSString *username = [self.userField.textField.text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
         NSString *password = self.passwordField.textField.text;
@@ -126,7 +139,7 @@
                                                success:success failure:failure];
     } else {
         [self.signUpButton setInProgress:NO];
-        A0ShowAlertErrorView(error.localizedDescription, error.localizedFailureReason);
+        A0ShowAlertErrorView(A0LocalizedString(@"Invalid credentials"), error.localizedFailureReason);
     }
     [self updateUIWithError:error];
 }
@@ -167,6 +180,7 @@
                 self.passwordField.invalid = YES;
                 break;
             case A0ErrorCodeInvalidUsername:
+            case A0ErrorCodeInvalidEmail:
                 self.userField.invalid = YES;
                 break;
         }
