@@ -45,9 +45,9 @@ Then you'll need to handle that custom scheme, so first import __Lock__ header i
 #import <Lock/Lock.h>
 ```
 
-> If you need help creating the Objective-C Bridging Header, please check the [wiki](https://developer.apple.com/library/ios/documentation/swift/conceptual/buildingcocoaapps/MixandMatch.html)
+> If you need help creating the Objective-C Bridging Header, please check the [wiki](https://github.com/auth0/Lock.iOS-OSX/wiki/Lock-&-Swift#create-objective-c-bridging-header)
 
-and override `-application:openURL:sourceApplication:annotation:` method, if you haven't done it before, and add the following line:
+And override `-application:openURL:sourceApplication:annotation:` method, if you haven't done it before, and add the following implementation:
 
 ```objc
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
@@ -60,11 +60,11 @@ func application(application: UIApplication, openURL url: NSURL, sourceApplicati
 }
 ```
 
-> This is required to be able to return back to your application when authenticating with Safari (or native integration with FB or Twitter if used). This call checks the URL and handles all that have the custom scheme defined before.
+> This is required to be able to return back to your application when authenticating with Safari (or native integration with FB or Twitter). This call checks the URL and handles them if their scheme matches the custom scheme defined earlier.
 
 ## Usage
 
-If you are working in Objective-C, first import __Lock__ header:
+If you are working in Objective-C, first import __Lock__ header
 
 ```objc
 #import <Lock/Lock.h>
@@ -74,7 +74,7 @@ If you are working in Objective-C, first import __Lock__ header:
 
 `A0LockViewController` will handle Email/Password, Enterprise & Social authentication based on your Application's connections enabled in your Auth0's Dashboard.
 
-First instantiate `A0LockViewController` and register the authentication callback that will receive the authenticated user's credentials. Finally present it as a modal view controller:
+To get started, instantiate `A0LockViewController` and register the authentication callback that will receive the authenticated user's credentials. Finally present it as a modal view controller:
 
 ```objc
 A0LockViewController *controller = [[A0LockViewController alloc] init];
